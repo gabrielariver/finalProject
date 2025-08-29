@@ -1,22 +1,21 @@
-import express from "express";
-const router = express.Router();
-import passport from "../config/passport.js";
+import { Router } from 'express';
+import passport from '../config/passport.js';
 
-router.get("/github", passport.authenticate("github", { scope: ["user:email"] }));
+const router = Router();
 
-router.get(
-  "/github/callback",
-  passport.authenticate("github", { failureRedirect: "/" }),
-  (req, res) => {
-    
-    res.redirect("http://localhost:3000"); 
-  }
+router.get('/github', passport.authenticate('github'));
+
+router.get('/github/callback',
+  passport.authenticate('github', {
+    failureRedirect: '/',
+    successRedirect: 'http://localhost:5173/dashboard',
+  })
 );
 
-router.get("/logout", (req, res) => {
+router.get('/logout', (req, res) => {
   req.logout(err => {
-    if (err) return res.status(500).send(err);
-    res.redirect("http://localhost:3000");
+    if (err) return res.status(500).send('Error al cerrar sesión');
+    res.redirect('/');
   });
 });
 
