@@ -2,7 +2,7 @@ import React from "react";
 
 const Login = () => {
   const handleLogin = () => {
-    window.location.href = "/auth/github"; // Esta ruta debe existir en el backend
+    window.location.href = "/auth/github";
   };
 
   return (

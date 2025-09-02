@@ -24,7 +24,7 @@ passport.use(new GitHubStrategy({
   scope: ["user:email"], 
 }, async (_accessToken, _refreshToken, profile, done) => {
   try {
-    console.log("🔍 Perfil recibido:", profile);
+    console.log("Perfil recibido:", profile);
 
     const existingUser = await User.findOne({ githubId: profile.id });
 
