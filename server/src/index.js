@@ -5,13 +5,14 @@ import session from "express-session";
 import passport from "./config/passport.js";
 import cors from "cors";
 import authRoutes from "./routes/auth.js";
+import meRoutes from "./routes/me.js";
 
 dotenv.config();
 const app = express();
 
 // Middlewares
 app.use(cors({
-  origin: "http://localhost:3000", // tu frontend
+  origin: "http://localhost:3000",
   credentials: true
 }));
 app.use(express.json());
@@ -30,6 +31,7 @@ mongoose.connect(process.env.MONGODB_URI)
 
 // Rutas
 app.use("/auth", authRoutes);
+app.use("/api/me", meRoutes);
 
 app.get("/", (req, res) => res.send("Servidor funcionando"));
 

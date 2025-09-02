@@ -20,9 +20,12 @@ passport.deserializeUser(async (id, done) => {
 passport.use(new GitHubStrategy({
   clientID: process.env.GITHUB_CLIENT_ID,
   clientSecret: process.env.GITHUB_CLIENT_SECRET,
-  callbackURL: process.env.GITHUB_CALLBACK
+  callbackURL: process.env.GITHUB_CALLBACK,
+  scope: ["user:email"], 
 }, async (_accessToken, _refreshToken, profile, done) => {
   try {
+    console.log("🔍 Perfil recibido:", profile);
+
     const existingUser = await User.findOne({ githubId: profile.id });
 
     if (existingUser) {
@@ -31,8 +34,8 @@ passport.use(new GitHubStrategy({
 
     const newUser = await User.create({
       githubId: profile.id,
-      name: profile.displayName || profile.username,
-      email: profile.emails?.[0]?.value || null,
+      name: profile.displayName || profile.username || "Usuario",
+      email: profile.emails?.length > 0 ? profile.emails[0].value : null,
       avatar: profile.photos?.[0]?.value || null
     });
 
