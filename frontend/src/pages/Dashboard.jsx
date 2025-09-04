@@ -17,7 +17,7 @@ export default function Dashboard(){
 
         <section className="stats">
           <div className="stat">
-            <span className="stat__label">Hábitos</span>
+            <span className="stat__label">Hábitos: </span>
             <span className="stat__value">{habits.length}</span>
           </div>
         </section>
