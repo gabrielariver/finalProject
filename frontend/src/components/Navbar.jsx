@@ -1,11 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 export default function Navbar({ user, onLogout, rightSlot = null }) {
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const menuRef = useRef(null);
 
   const toggleUserMenu = () => {
     setShowUserMenu(!showUserMenu);
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowUserMenu(false);
+      }
+    };
+
+    if (showUserMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showUserMenu]);
 
   return (
     <>
@@ -14,7 +31,7 @@ export default function Navbar({ user, onLogout, rightSlot = null }) {
         <div className="nav__spacer" />
         
         {user ? (
-          <div className="user-menu-container">
+          <div className="user-menu-container" ref={menuRef} style={{ position: 'relative' }}>
             <div className="user-info" onClick={toggleUserMenu}>
               <img 
                 src={user.avatar_url || '/default-avatar.png'} 
@@ -84,10 +101,13 @@ export default function Navbar({ user, onLogout, rightSlot = null }) {
                 
                 <button 
                   className="logout-btn"
-                  onClick={() => {
-                    setShowUserMenu(false);
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     onLogout();
+                    setShowUserMenu(false);
                   }}
+                  onMouseDown={(e) => e.stopPropagation()}
                   style={{
                     width: '100%',
                     padding: '8px 12px',
@@ -98,7 +118,14 @@ export default function Navbar({ user, onLogout, rightSlot = null }) {
                     display: 'flex',
                     alignItems: 'center',
                     fontSize: '14px',
-                    color: '#333'
+                    color: '#333',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = '#e0e0e0';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = '#f5f5f5';
                   }}
                 >
                   <svg viewBox="0 0 24 24" width="16" height="16" style={{ marginRight: '8px' }}>
@@ -113,22 +140,6 @@ export default function Navbar({ user, onLogout, rightSlot = null }) {
           rightSlot
         )}
       </nav>
-      
-      {/* Overlay para cerrar el menú */}
-      {showUserMenu && (
-        <div 
-          className="user-menu-overlay" 
-          onClick={() => setShowUserMenu(false)}
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 999
-          }}
-        ></div>
-      )}
     </>
   );
 }

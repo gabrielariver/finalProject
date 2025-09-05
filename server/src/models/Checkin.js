@@ -6,7 +6,7 @@ const CheckinSchema = new mongoose.Schema({
   // Agregar userId para autenticación real
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', index: true },
   habitId: { type: mongoose.Schema.Types.ObjectId, ref: 'Habit', required: true },
-  day: { type: String, required: true } // YYYY-MM-DD
+  day: { type: String, required: true } // Formato 'YYYY-MM-DD'
 }, { timestamps: true });
 
 // Índices únicos para prevenir duplicados

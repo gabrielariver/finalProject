@@ -82,11 +82,9 @@ export function useHabits(){
     
     try{
       await api('/api/checkins/today', { method:'POST', body: JSON.stringify({ habitId }) })
-      // Refresh to get updated stats
       await refresh()
       await fetchGeneralStats()
     }catch(e){
-      // Revert optimistic update on error
       setTodayDone(prev=>{
         const next = new Set(prev)
         wasChecked ? next.add(habitId) : next.delete(habitId)

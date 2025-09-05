@@ -3,6 +3,8 @@ import Habit from '../models/Habit.js';
 import Checkin from '../models/Checkin.js';
 import { requireClient, validateObjectId } from '../middleware/requireClient.js';
 import { StatsService } from '../services/statsService.js';
+import { requireAuth } from '../middleware/requireAuth.js';
+
 const router = express.Router();
 
 // Validación de datos de hábito
@@ -39,6 +41,8 @@ const validateHabitData = (req, res, next) => {
   
   next();
 };
+
+router.use(requireAuth);
 
 router.get('/', requireClient, async (req, res, next) => {
   try {

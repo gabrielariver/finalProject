@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const HabitSchema = new mongoose.Schema({
-  // Mantener clientId para compatibilidad con versión actual
+  // Mantener clientId 
   clientId: { type: String, index: true },
   // Agregar userId para autenticación real
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', index: true },

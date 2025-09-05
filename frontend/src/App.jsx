@@ -1,4 +1,5 @@
 import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Dashboard from './pages/Dashboard.jsx';
 import LoginPage from './components/LoginPage.jsx';
 import { useAuth } from './hooks/useAuth.js';
@@ -30,42 +31,44 @@ export default function App() {
     );
   }
 
-  // Si no está autenticado, mostrar página de login
-  if (!isAuthenticated) {
-    return <LoginPage onLogin={login} loading={loading} error={error} />;
-  }
-
-  // Si está autenticado, mostrar la aplicación con Dashboard
   return (
-    <div className="app">
-      {error && (
-        <div style={{
-          backgroundColor: '#fee2e2',
-          border: '1px solid #fecaca',
-          color: '#dc2626',
-          padding: '12px',
-          margin: '16px',
-          borderRadius: '8px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}>
-          <span>⚠️ {error}</span>
-          <button 
-            onClick={clearError}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: '#dc2626',
-              cursor: 'pointer',
-              fontSize: '18px'
-            }}
-          >
-            ×
-          </button>
-        </div>
-      )}
-      <Dashboard user={user} onLogout={logout} />
-    </div>
+    <BrowserRouter>
+      <div className="app">
+        {error && (
+          <div style={{
+            backgroundColor: '#fee2e2',
+            border: '1px solid #fecaca',
+            color: '#dc2626',
+            padding: '12px',
+            margin: '16px',
+            borderRadius: '8px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
+            <span>⚠️ {error}</span>
+            <button onClick={clearError}>×</button>
+          </div>
+        )}
+        <Routes>
+          <Route 
+            path="/" 
+            element={
+              isAuthenticated ? 
+                <Navigate to="/dashboard" replace /> : 
+                <LoginPage onLogin={login} loading={loading} error={error} />
+            } 
+          />
+          <Route 
+            path="/dashboard" 
+            element={
+              isAuthenticated ? 
+                <Dashboard user={user} onLogout={logout} /> : 
+                <Navigate to="/" replace />
+            } 
+          />
+        </Routes>
+      </div>
+    </BrowserRouter>
   );
 }

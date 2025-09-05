@@ -6,7 +6,7 @@ function getClientId(){
   return id
 }
 
-const base = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+const base = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export async function api(path, options={}){
   const res = await fetch(`${base}${path}`, {
@@ -15,7 +15,7 @@ export async function api(path, options={}){
       'X-Client-Id': getClientId(), 
       ...(options.headers||{}) 
     },
-    credentials: 'include', // Importante para OAuth sessions
+    credentials: 'include',
     ...options
   })
   
@@ -26,7 +26,6 @@ export async function api(path, options={}){
       msg = errorData?.error || errorData?.message || msg;
     }catch{}
     
-    // Si es 401, podría ser problema de autenticación
     if(res.status === 401) {
       msg = 'No autenticado. Por favor, inicia sesión.';
     }
@@ -38,7 +37,6 @@ export async function api(path, options={}){
   return ct.includes('application/json') ? res.json() : res.text()
 }
 
-// Hook para usar la API con estado de loading y error
 export function useApi() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);

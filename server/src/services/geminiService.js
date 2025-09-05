@@ -2,7 +2,6 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export class GeminiService {
   constructor() {
-    // No verificamos la API key en el constructor para evitar warnings prematuros
     this.genAI = null;
     this.model = null;
     this.initialized = false;
