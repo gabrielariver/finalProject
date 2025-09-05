@@ -12,7 +12,7 @@ import { errorHandler } from './middleware/requireClient.js';
 
 dotenv.config();
 const app = express();
-
+app.set('trust proxy', 1);
 // Middleware básico
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
@@ -38,7 +38,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Conexión a MongoDB
-mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://grivera:mongo@cluster0.wukbtkt.mongodb.net/habits?retryWrites=true&w=majority')
+mongoose.connect(process.env.MONGODB_URI )
   .then(() => console.log('✅ MongoDB conectado'))
   .catch(e => console.error('❌ Mongo:', e.message));
 
