@@ -21,20 +21,33 @@ const isProd = process.env.NODE_ENV === 'production';
 const PORT = process.env.PORT || 5000;
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
-console.log('🌍 ENV:', {
-  NODE_ENV: process.env.NODE_ENV,
+// Lista de orígenes permitidos (prod + previews + local)
+const allowedOrigins = [
   FRONTEND_URL,
-  MONGO: process.env.MONGODB_URI ? 'set' : 'missing',
-});
+  'http://localhost:5173',
+  /\.vercel\.app$/ 
+];
 
-// Render / proxies HTTPS -> necesario para cookies Secure
+// CORS dinámico
+const corsOptions = {
+  origin(origin, cb) {
+    // peticiones server-to-server o curl pueden venir sin origin
+    if (!origin) return cb(null, true);
+
+    const ok = allowedOrigins.some(rule =>
+      rule instanceof RegExp ? rule.test(origin) : rule === origin
+    );
+    return ok ? cb(null, true) : cb(new Error(`CORS blocked: ${origin}`));
+  },
+  credentials: true
+};
+
+
 app.set('trust proxy', 1);
 
 // ===== Middlewares =====
-app.use(cors({
-  origin: FRONTEND_URL,      
-  credentials: true
-}));
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 app.use(express.json());
 
@@ -46,9 +59,8 @@ app.use(session({
   cookie: {
     httpOnly: true,
     path: '/',
-    // dominios distintos (Vercel/Render) -> SameSite None + Secure en prod
-    sameSite: isProd ? 'none' : 'lax',
-    secure: isProd
+    sameSite: isProd ? 'none' : 'lax', 
+    secure: isProd                    
   }
 }));
 
@@ -66,10 +78,7 @@ app.get('/', (_req, res) => res.json({
   version: '2.0.0',
   status: 'ok',
   frontend: FRONTEND_URL,
-  auth: {
-    github: '/auth/github',
-    status: '/auth/status'
-  }
+  auth: { github: '/auth/github', status: '/auth/status' }
 }));
 
 app.get('/health', (_req, res) => res.json({ ok: true }));
@@ -87,11 +96,12 @@ app.use('*', (req, res) => {
   });
 });
 
-// Manejo de errores (tu middleware)
+// Manejo de errores
 app.use(errorHandler);
 
 // ===== Start =====
 app.listen(PORT, () => {
   console.log(`🚀 API listening on http://localhost:${PORT}`);
+  console.log(`🌍 FRONTEND_URL: ${FRONTEND_URL}`);
   console.log(`🔐 OAuth GitHub callback: ${process.env.GITHUB_CALLBACK_URL}`);
 });
