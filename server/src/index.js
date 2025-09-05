@@ -1,9 +1,11 @@
+// server/src/index.js
 import express from 'express';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import session from 'express-session';
 import passport from './config/passport.js';
+
 import habitsRoutes from './routes/habits.js';
 import checkinsRoutes from './routes/checkins.js';
 import aiRoutes from './routes/ai.js';
@@ -11,67 +13,85 @@ import authRoutes from './routes/auth.js';
 import { errorHandler } from './middleware/requireClient.js';
 
 dotenv.config();
+
 const app = express();
+
+// ===== Config base =====
+const isProd = process.env.NODE_ENV === 'production';
+const PORT = process.env.PORT || 5000;
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+
+console.log('🌍 ENV:', {
+  NODE_ENV: process.env.NODE_ENV,
+  FRONTEND_URL,
+  MONGO: process.env.MONGODB_URI ? 'set' : 'missing',
+});
+
+// Render / proxies HTTPS -> necesario para cookies Secure
 app.set('trust proxy', 1);
-// Middleware básico
+
+// ===== Middlewares =====
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: FRONTEND_URL,      
   credentials: true
 }));
+
 app.use(express.json());
 
-// Configuración de sesiones
 app.use(session({
+  name: 'connect.sid',
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: {
-    sameSite: 'lax',
-    secure: false,   
-    path: '/'
+    httpOnly: true,
+    path: '/',
+    // dominios distintos (Vercel/Render) -> SameSite None + Secure en prod
+    sameSite: isProd ? 'none' : 'lax',
+    secure: isProd
   }
 }));
 
-
-// Inicializar Passport
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Conexión a MongoDB
-mongoose.connect(process.env.MONGODB_URI )
+// ===== Mongo =====
+mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('✅ MongoDB conectado'))
   .catch(e => console.error('❌ Mongo:', e.message));
 
-// Rutas
-app.get('/', (_, res) => res.json({ 
-  message: 'Hábitos & Rachas API', 
+// ===== Rutas =====
+app.get('/', (_req, res) => res.json({
+  message: 'Hábitos & Rachas API',
   version: '2.0.0',
   status: 'ok',
-  features: ['OAuth GitHub', 'AI Suggestions', 'Statistics'],
+  frontend: FRONTEND_URL,
   auth: {
     github: '/auth/github',
     status: '/auth/status'
   }
 }));
 
+app.get('/health', (_req, res) => res.json({ ok: true }));
+
 app.use('/auth', authRoutes);
 app.use('/api/habits', habitsRoutes);
 app.use('/api/checkins', checkinsRoutes);
 app.use('/api/ai', aiRoutes);
 
-// Middleware para rutas no encontradas
+// 404
 app.use('*', (req, res) => {
-  res.status(404).json({ 
-    error: 'Not Found', 
-    message: `Route ${req.originalUrl} not found` 
+  res.status(404).json({
+    error: 'Not Found',
+    message: `Route ${req.originalUrl} not found`
   });
 });
 
-// Middleware de manejo de errores 
+// Manejo de errores (tu middleware)
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 5000;
+// ===== Start =====
 app.listen(PORT, () => {
-  console.log(`🚀 API http://localhost:${PORT}`);
-  console.log(`🔐 GitHub OAuth: http://localhost:${PORT}/auth/github`);
+  console.log(`🚀 API listening on http://localhost:${PORT}`);
+  console.log(`🔐 OAuth GitHub callback: ${process.env.GITHUB_CALLBACK_URL}`);
 });
