@@ -285,7 +285,7 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 - Mario Ramírez
 - Cecilia Tomala
 - Fernando Benavides
-
+- Amran Sigüenza 
 ---
 
 ⭐ Si te gusta este proyecto, ¡dale una estrella en GitHub!
